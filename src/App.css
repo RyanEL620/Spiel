@@ -145,7 +145,7 @@ body {
   position: relative;
   min-height: 90px;
   padding: 6px;
-  touch-action: none;
+  touch-action: manipulation;
   transition: transform 0.08s, filter 0.08s;
   -webkit-user-select: none;
   user-select: none;
