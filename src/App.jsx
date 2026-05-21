@@ -78,7 +78,19 @@ export default function App() {
         window.speechSynthesis.cancel()
         const u = new SpeechSynthesisUtterance(btn.label)
         u.rate = 0.88
-        window.speechSynthesis.speak(u)
+        u.volume = 1
+
+        // Get available voices on this device
+        const voices = window.speechSynthesis.getVoices()
+        if (voices.length > 0) {
+          // Prefer english voice, take whatever is available
+          const english = voices.find(v => v.lang.startsWith('en')) || voices[0]
+          u.voice = english
+        }
+
+        setTimeout(() => {
+          window.speechSynthesis.speak(u)
+        }, 100)
       }
     })
   }
