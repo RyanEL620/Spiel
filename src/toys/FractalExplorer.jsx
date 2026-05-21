@@ -167,7 +167,7 @@ export default function FractalExplorer() {
 
   function toggleMusic() {
     if (!audioRef.current) {
-      audioRef.current = new Audio(`${import.meta.env.BASE_URL}sounds/AppTune1.mp3`)
+      audioRef.current = new Audio('/Spiel/sounds/AppTune1.mp3')
       audioRef.current.loop = true
     }
     if (playing) {
