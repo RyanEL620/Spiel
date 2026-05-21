@@ -9,6 +9,7 @@ import EditFAB from './components/EditFAB'
 import ContextMenu from './components/ContextMenu'
 import PinPrompt from './components/PinPrompt'
 import Settings from './components/Settings'
+import MyStuff from './pages/MyStuff'
 import './App.css'
 
 function deepClone(obj) {
@@ -29,13 +30,13 @@ function generateDDId(parent) {
 
 export default function App() {
   const [board, setBoard] = useState(() => {
-  try {
-    const saved = localStorage.getItem('spiel_board')
-    return saved ? JSON.parse(saved) : deepClone(DEFAULT_BOARD)
-  } catch {
-    return deepClone(DEFAULT_BOARD)
-  }
-})
+    try {
+      const saved = localStorage.getItem('spiel_board')
+      return saved ? JSON.parse(saved) : deepClone(DEFAULT_BOARD)
+    } catch {
+      return deepClone(DEFAULT_BOARD)
+    }
+  })
   const [currentParent, setCurrentParent] = useState(null)
 
   const sessionSnapshot = useRef(deepClone(DEFAULT_BOARD))
@@ -44,28 +45,26 @@ export default function App() {
   const [output, setOutput] = useState('')
   const [editMode, setEditMode] = useState(false)
   const [showLabels, setShowLabels] = useState(() => {
-  try {
-    const saved = localStorage.getItem('spiel_showLabels')
-    return saved !== null ? JSON.parse(saved) : true
-  } catch {
-    return true
-  }
-})
+    try {
+      const saved = localStorage.getItem('spiel_showLabels')
+      return saved !== null ? JSON.parse(saved) : true
+    } catch {
+      return true
+    }
+  })
   const [showPin, setShowPin] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [showMyStuff, setShowMyStuff] = useState(false)
   const [contextMenu, setContextMenu] = useState(null)
-  // Save board to local storage whenever it changes
-useEffect(() => {
-  localStorage.setItem('spiel_board', JSON.stringify(board))
-}, [board])
 
-// Save showLabels whenever it changes  
-useEffect(() => {
-  localStorage.setItem('spiel_showLabels', JSON.stringify(showLabels))
-}, [showLabels])
+  useEffect(() => {
+    localStorage.setItem('spiel_board', JSON.stringify(board))
+  }, [board])
 
+  useEffect(() => {
+    localStorage.setItem('spiel_showLabels', JSON.stringify(showLabels))
+  }, [showLabels])
 
-  
   const currentButtons = currentParent
     ? board.find(b => b.id === currentParent.id)?.dd || []
     : board
@@ -198,7 +197,8 @@ useEffect(() => {
     const mainBtn = board.find(b => b.id === btn.id)
     if (mainBtn) setCurrentParent(mainBtn)
   }
-function handleReorder(activeId, overId) {
+
+  function handleReorder(activeId, overId) {
     setBoard(prev => {
       const next = deepClone(prev)
       if (currentParent) {
@@ -275,32 +275,40 @@ function handleReorder(activeId, overId) {
       <TopBar
         editMode={editMode}
         onSettingsClick={() => setShowPin(true)}
+        onMyStuffClick={() => setShowMyStuff(!showMyStuff)}
+        showMyStuff={showMyStuff}
       />
 
-      <OutputBar
-        output={output}
-        onClear={() => setOutput('')}
-      />
+      {showMyStuff ? (
+        <MyStuff />
+      ) : (
+        <>
+          <OutputBar
+            output={output}
+            onClear={() => setOutput('')}
+          />
 
-      <NavBar
-        currentParent={currentParent}
-        onBack={handleBack}
-      />
+          <NavBar
+            currentParent={currentParent}
+            onBack={handleBack}
+          />
 
-      <Grid
-        buttons={currentButtons}
-        editMode={editMode}
-        showLabels={showLabels}
-        onSpeak={speak}
-        onDrillDown={handleDrillDown}
-        onContextMenu={handleContextMenu}
-        onReorder={handleReorder}
-      />
+          <Grid
+            buttons={currentButtons}
+            editMode={editMode}
+            showLabels={showLabels}
+            onSpeak={speak}
+            onDrillDown={handleDrillDown}
+            onContextMenu={handleContextMenu}
+            onReorder={handleReorder}
+          />
 
-      {editMode && <EditFAB onAdd={handleAddButton} />}
+          {editMode && <EditFAB onAdd={handleAddButton} />}
 
-      {!editMode && (
-        <div className="hint">Tap to speak · Hold for sub-menu</div>
+          {!editMode && (
+            <div className="hint">Tap to speak · Hold for sub-menu</div>
+          )}
+        </>
       )}
 
       {contextMenu && (
