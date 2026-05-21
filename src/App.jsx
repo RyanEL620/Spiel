@@ -74,24 +74,35 @@ export default function App() {
     const audioPath = btn.audio || toAudioPath(btn.label)
     const audio = new Audio(audioPath)
     audio.play().catch(() => {
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel()
-        const u = new SpeechSynthesisUtterance(btn.label)
-        u.rate = 0.88
-        u.volume = 1
+      if (!window.speechSynthesis) return
 
-        // Get available voices on this device
+      window.speechSynthesis.cancel()
+      const u = new SpeechSynthesisUtterance(btn.label)
+      u.rate = 0.88
+      u.volume = 1
+
+      const trySpeak = () => {
         const voices = window.speechSynthesis.getVoices()
         if (voices.length > 0) {
-          // Prefer english voice, take whatever is available
           const english = voices.find(v => v.lang.startsWith('en')) || voices[0]
           u.voice = english
-        }
-
-        setTimeout(() => {
           window.speechSynthesis.speak(u)
-        }, 100)
+        } else {
+          // Voices not loaded yet — wait for them
+          window.speechSynthesis.onvoiceschanged = () => {
+            const v = window.speechSynthesis.getVoices()
+            const english = v.find(voice => voice.lang.startsWith('en')) || v[0]
+            u.voice = english
+            window.speechSynthesis.speak(u)
+          }
+          // Fallback — just speak without a specific voice
+          setTimeout(() => {
+            window.speechSynthesis.speak(u)
+          }, 300)
+        }
       }
+
+      trySpeak()
     })
   }
 
